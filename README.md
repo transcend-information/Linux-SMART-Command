@@ -8,7 +8,7 @@ Get S.M.A.R.T Information for the SATA/NVMe drive.
 
 This sample code demonstrates how to get the disk information of the solid state drives (SSD) in Linux, \
 include **identify information** (model name, firmeare version and serial number, etc.) \
-and **S.M.A.R.T information** (temperature, erase count and power-on hours, etc.). \
+and **S.M.A.R.T information** (temperature, erase count and power-on hours, etc.). 
 
 Supports SATA and NVMe interface devices. 
 
