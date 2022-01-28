@@ -17,20 +17,20 @@ Supports SATA and NVMe interface devices.
   
   - **compile the executable file**
   
-    ```$g++ -Wformat=0 -std=c++11 -static main.cpp nvme_util.cpp -o ScopePro_Cmd```
+    ```$g++ -Wformat=0 -std=c++11 -static main.cpp nvme_util.cpp -o SMARTQuery_Cmd```
     
   - **use <chmod +x> for sure you have proper right to execute the executable file**
 
-    ```$chmod +x ScopePro_Cmd```\
-    ```$sudo ./ScopePro_Cmd```
+    ```$chmod +x SMARTQuery_Cmd```\
+    ```$sudo ./SMARTQuery_Cmd```
     
 #
   **Usage**
   
-  - **ScopePro_Cmd**\
+  - **SMARTQuery_Cmd**\
     show all information of devices
     
-  - **ScopePro_Cmd[option] \<device>**\
+  - **SMARTQuery_Cmd[option] \<device>**\
     show specific information of the device by option
     - Options:
       - -all: list all information of the device
