@@ -41,8 +41,8 @@ Supports SATA and NVMe interface devices.
       - -v: display the application version
 
 #
-  <img src="https://github.com/transcend-information/ScopePro-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-05-41.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-21.png" width=70% height=70%>
   
-  <img src="https://github.com/transcend-information/ScopePro-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-06-06.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-43.png" width=70% height=70%>
   
-  <img src="https://github.com/transcend-information/ScopePro-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-06-38.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-21.png" width=70% height=70%>
