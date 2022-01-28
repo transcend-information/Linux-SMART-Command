@@ -17,20 +17,20 @@ Supports SATA and NVMe interface devices.
   
   - **compile the executable file**
   
-    ```$g++ -Wformat=0 -std=c++11 -static main.cpp nvme_util.cpp -o ScopePro_Cmd```
+    ```$g++ -Wformat=0 -std=c++11 -static main.cpp nvme_util.cpp -o SMARTQuery_Cmd```
     
   - **use <chmod +x> for sure you have proper right to execute the executable file**
 
-    ```$chmod +x ScopePro_Cmd```\
-    ```$sudo ./ScopePro_Cmd```
+    ```$chmod +x SMARTQuery_Cmd```\
+    ```$sudo ./SMARTQuery_Cmd```
     
 #
   **Usage**
   
-  - **ScopePro_Cmd**\
+  - **SMARTQuery_Cmd**\
     show all information of devices
     
-  - **ScopePro_Cmd[option] \<device>**\
+  - **SMARTQuery_Cmd[option] \<device>**\
     show specific information of the device by option
     - Options:
       - -all: list all information of the device
@@ -41,8 +41,8 @@ Supports SATA and NVMe interface devices.
       - -v: display the application version
 
 #
-  <img src="https://github.com/transcend-information/ScopePro-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-05-41.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-21.png" width=70% height=70%>
   
-  <img src="https://github.com/transcend-information/ScopePro-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-06-06.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-43.png" width=70% height=70%>
   
-  <img src="https://github.com/transcend-information/ScopePro-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-06-38.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-21.png" width=70% height=70%>
