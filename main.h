@@ -47,14 +47,13 @@ string LogPath;
 #define MMC_RSP_R2 (MMC_RSP_PRESENT|MMC_RSP_136|MMC_RSP_CRC)
 #define MMC_CMD_BCR (3 << 5)
 
-#define MMC_SEND_CMD7		7
+#define VERSION "1.12.0"
 
 void ListAllDeviceInfo();
 void DumpSATAAllInfo(string deviceStr);
 int DumpSATAIDInfo(string deviceStr);
 int DumpSATASMARTInfo(string deviceStr);
 int DumpSATAHealthInfo(string deviceStr);
-bool SecureEraseATA(string deviceStr);
 
 void DumpAllNVMEInfo(string deviceStr);
 int DumpNVMEIDInfo(string deviceStr);
@@ -62,13 +61,7 @@ int DumpNVMESMARTInfo(string deviceStr);
 int DumpNVMEHealthInfo(string deviceStr);
 int DumpNVMEBadblock(string deviceStr);
 int DumpNVMEWAI(string deviceStr);
-int SecureEraseNVME(string deviceStr);
 
-int CMD56_data_in(int fd, int cmd56_arg, char *lba_block_data); // Sub-function
-int DumpSDCardSMARTInfo(string deviceStr);
-vector<string> showSM2707(char* data_in);
-vector<string> showSM2706(char* data_in);
-vector<string> showSMCommon(char* data_in, bool calculateHealth);
 char *grabString(char* data, int start_pos, int length);
 char* grabHex(char* data, int start_pos, int length);
 double hexArrToDec(char *data, int start_pos, int length);
