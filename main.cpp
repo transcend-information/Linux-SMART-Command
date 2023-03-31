@@ -22,8 +22,6 @@
 #include <linux/mmc/ioctl.h>
 #include <linux/major.h>
 
-using namespace std;
-
 const char *format_char_array(char *str, int strsize, const char *chr, int chrsize)
 {
 	int b = 0;
@@ -138,8 +136,7 @@ static unsigned le16_to_uint(const unsigned char(&val)[2])
 	return ((val[1] << 8) | val[0]);
 }
 
-static
-const char *le128_to_str(char(&str)[64], uint64_t hi, uint64_t lo, unsigned bytes_per_unit)
+static const char *le128_to_str(char(&str)[64], uint64_t hi, uint64_t lo, unsigned bytes_per_unit)
 {
 	if (!hi)
 	{
@@ -195,7 +192,7 @@ int main(int argc, char *argv[])
 	}
 	if (argc == 1)
 	{
-		ListAllDeviceInfo();
+		listAllDeviceInfo();
 	}
 	else if (argc == 2)
 	{
@@ -225,11 +222,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	else if (args[1].find("-") == 0 && argc >= 3)
-	{
-		if(isSupport(args[2])==0)
-		{
-			return 0;
-		}	   
+	{   
 		if (args[1].compare("-smart") == 0)
 		{
 			if (args[2].find("nvme") != std::string::npos)
@@ -286,35 +279,31 @@ int main(int argc, char *argv[])
 	}
 }
 
-void ListAllDeviceInfo()
+void listAllDeviceInfo()
 {
 	char device_num = 'a';
 
-	/* Start of "Scan ATA Device" loop */
+	/* Start of "Scan ATA Device" loop : sda - sdz */
 	for (int i = 0; i < 26; i++)
 	{
-		string device_str_byte = "/dev/sd";
-		device_str_byte += device_num;
-		if(isSupport(device_str_byte)!=0)
-		{ 
-			DumpSATAAllInfo(device_str_byte);
-		}
+		string satadev_str = "/dev/sd";
+		satadev_str += device_num;
+
+		DumpSATAAllInfo(satadev_str);
+
 		device_num = device_num + 1;
   	}
 
-	/*start of "Scan NVME device" loop */
+	/*start of "Scan NVME device" loop : nvme0 - nvme10 */
 	for (int x = 0; x < 10; x++)
 	{
 		for (int y = 0; y < 10; y++)
 		{
-			string tmp_str = "/dev/nvme" + std::to_string(x) + "n" + std::to_string(y);
-			if(isSupport(tmp_str)!=0)
-			{
-				DumpNVMEIDInfo(tmp_str);
-				DumpNVMESMARTInfo(tmp_str);
-				DumpNVMEHealthInfo(tmp_str);
-			}
-	
+			string nvmedev_str = "/dev/nvme" + std::to_string(x) + "n" + std::to_string(y);
+
+			DumpNVMEIDInfo(nvmedev_str);
+			DumpNVMESMARTInfo(nvmedev_str);
+			DumpNVMEHealthInfo(nvmedev_str);	
 		}
 	}
 }
@@ -686,92 +675,7 @@ vector<string> get_SMART_Data_NVMe(nvme_Device *nvmeDev, int fd)
 
 	return smart;
 }
-int Read_Identity(string deviceStr, unsigned char *buf, uint size)
-{
-	unsigned char cdb[12];
-	unsigned char sense_buf[32];
-	//unsigned char *desc = sense_buf + 8;
-	sg_io_hdr_t io_hdr;
-	int ret = -1;
 
-	memset(&io_hdr, 0, sizeof(sg_io_hdr_t));
-	memset(&cdb, 0, 12);
-	memset(&sense_buf, 0, 32);
-	cdb[0] = 0xA1;
-	cdb[1] = 4 << 1;
-	cdb[2] = 0x2E;
-	cdb[3] = 0x00;
-	cdb[4] = 0x01;
-	cdb[5] = 0x00;
-	cdb[6] = 0x00;
-	cdb[7] = 0x00;
-	cdb[8] = 0 &0x4F;
-	cdb[9] = 0xEC;
-
-	io_hdr.interface_id = 'S';
-	io_hdr.cmd_len = sizeof(cdb);
-	/*io_hdr.iovec_count = 0; */
-	/*memset takes care of this */
-	io_hdr.mx_sb_len = sizeof(sense_buf);
-	io_hdr.dxfer_direction = SG_DXFER_FROM_DEV;
-	io_hdr.dxfer_len = size;
-	io_hdr.dxferp = buf;
-	io_hdr.cmdp = cdb;
-	io_hdr.sbp = sense_buf;
-	io_hdr.timeout = 120000; /*120000 millisecs == 120 seconds */
-
-	int fd = ::open(deviceStr.c_str(), O_RDONLY | O_NONBLOCK);
-
-	ret = ioctl(fd, SG_IO, &io_hdr);
-	if (ret != 0)
-	{
-		perror("IO Fail");
-	}::close(fd);
-	return ret;
-}
-
-int isSupport(string deviceStr)
-{
-	int i = 0;
-	 string model = "";
-	if (deviceStr.find("nvme") != std::string::npos)
-	{
-		//nvme
-		nvme_Device * nvmeDev;
-		nvmeDev = new nvme_Device(deviceStr.c_str(), "", 0);
-		int fd = nvmeDev->myOpen();
-		if (fd < 0)
-			return -1;
-		char buf[64];
-		nvme_Device::nvme_id_ctrl id_ctrl;
-		const char *model_str_byte;
-		const char *serialno_str_byte;
-		const char *
-			fwrev_str_byte;
-		nvmeDev->nvme_read_id_ctrl(id_ctrl);
- 		model_str_byte = format_char_array(buf, id_ctrl.mn);
-		model= std::string(model_str_byte);
-	}
-	else
-	{
-		struct hd_driveid hd;
-		int fd;
-		memset(&hd, 0, 512);
-		fd = ::open(deviceStr.c_str(), O_RDONLY | O_NONBLOCK);
-		if (fd < 0)
-			return -1;
-		if (!ioctl(fd, HDIO_GET_IDENTITY, &hd))
-		{
-			 model =reinterpret_cast<char*> (hd.model);
-		}
-		::close(fd);
-	}
-	 
-	if(model.empty())
-		return 0;
-	else
-		return 1;
-}
 
 char* grabString(char* data, int start_pos, int length){
 	char *str = (char*)malloc( (length + 1) * sizeof(char) );
@@ -800,7 +704,7 @@ void showGuide()
 	cout << "Usage:" << endl;
 	cout << " " << "SMARTQuery_Cmd" << endl;
 	cout << "\tshow all information of devices" << endl;
-	cout << " " << "SMARTQuery_Cmd[option] <device>" << endl;
+	cout << " " << "SMARTQuery_Cmd [option] <device>" << endl;
 	cout << "\tshow specific information of the device by option" << endl;
 	cout << "\nOptions:" << endl;
 	cout << " " << "-all:" << "\t\tlist all information of the device" << endl;

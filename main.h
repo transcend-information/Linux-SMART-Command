@@ -19,37 +19,10 @@ template<size_t STRSIZE, size_t CHRSIZE>
 inline const char * format_char_array(char (& str)[STRSIZE], const char (& chr)[CHRSIZE])
   { return format_char_array(str, (int)STRSIZE, chr, (int)CHRSIZE); }
 
-string LogPath;
-//bool WriteLog;
-
-#define SD_BLOCK_SIZE 512 /* data block size for CMD56 */
-/* From kernel linux/mmc/core.h */
-#define MMC_RSP_PRESENT	(1 << 0)
-#define MMC_RSP_136	(1 << 1)		/* 136 bit response */
-#define MMC_RSP_CRC	(1 << 2)		/* expect valid crc */
-#define MMC_RSP_BUSY	(1 << 3)		/* card may send busy */
-#define MMC_RSP_OPCODE	(1 << 4)		/* response contains opcode */
-
-#define MMC_CMD_AC	(0 << 5)
-#define MMC_CMD_ADTC	(1 << 5)
-
-#define MMC_RSP_SPI_S1	(1 << 7)		/* one status byte */
-#define MMC_RSP_SPI_BUSY (1 << 10)		/* card may send busy */
-
-#define MMC_RSP_SPI_R1	(MMC_RSP_SPI_S1)
-#define MMC_RSP_SPI_R1B	(MMC_RSP_SPI_S1|MMC_RSP_SPI_BUSY)
-
-#define MMC_RSP_R1	(MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
-#define MMC_RSP_R1B	(MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE|MMC_RSP_BUSY)
-
-#define SD_GEN_CMD 56 /* adtc, R1 */
-#define SD_BLOCK_SIZE 512 /* data block size for CMD56 */
-#define MMC_RSP_R2 (MMC_RSP_PRESENT|MMC_RSP_136|MMC_RSP_CRC)
-#define MMC_CMD_BCR (3 << 5)
 
 #define VERSION "1.12.0"
 
-void ListAllDeviceInfo();
+void listAllDeviceInfo();
 void DumpSATAAllInfo(string deviceStr);
 int DumpSATAIDInfo(string deviceStr);
 int DumpSATASMARTInfo(string deviceStr);
