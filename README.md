@@ -7,8 +7,8 @@ Get S.M.A.R.T Information for the SATA/NVMe SSD drive.
 -------------------------
 
 This sample code demonstrates how to get the disk information of the solid state drives (SSD) in Linux, \
-include **identify information** (model name, firmware version and serial number, etc.) \
-and **S.M.A.R.T information** (temperature, erase count and power-on hours, etc.). 
+include **identify information** (model name, firmware version and serial number, etc.) , \
+**S.M.A.R.T information** (temperature, erase count and power-on hours, etc.) and **Health information**. 
 
 Supports SATA and NVMe SSD devices. 
 
@@ -30,7 +30,7 @@ Supports SATA and NVMe SSD devices.
   - **SMARTQuery_Cmd**\
     show all information of devices
     
-  - **SMARTQuery_Cmd[option] \<device>**\
+  - **SMARTQuery_Cmd [option] \<device>**\
     show specific information of the device by option
     - Options:
       - -all: list all information of the device
