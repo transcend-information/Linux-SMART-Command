@@ -1,26 +1,16 @@
 ﻿#include <iostream>
 #include "main.h"
 #include "nvme_util.h"
-#include "int64.h"
-#include <cstring>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
-#include <fstream>
 #include <linux/hdreg.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <iomanip>
-
-#include <linux/mmc/ioctl.h>
-#include <linux/major.h>
+#include <cinttypes>
 
 const char *format_char_array(char *str, int strsize, const char *chr, int chrsize)
 {
@@ -53,6 +43,7 @@ static const char *to_str(char(&str)[64], int k)
 		snprintf(str, sizeof(str), "%d Celsius", k - 273);
 	return str;
 }
+
 const char *format_with_thousands_sep(char *str, int strsize, uint64_t val, const char *thousands_sep /*= 0 */)
 {
 	if (!thousands_sep)
@@ -231,7 +222,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				DumpSATASMARTInfo(args[2]);
+				getSATASMARTInfo(args[2]);
 			}
 		}
 		else if (args[1].compare("-id") == 0)
@@ -242,7 +233,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				DumpSATAIDInfo(args[2]);
+				getSATAIDInfo(args[2]);
 			}
 		}
 		else if (args[1].compare("-health") == 0)
@@ -254,18 +245,18 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				DumpSATAHealthInfo(args[2]);
+				getSATAHealthInfo(args[2]);
 			}
 		}
 		else if (args[1].compare("-all") == 0)
 		{
 			if (args[2].find("nvme") != std::string::npos)
 			{
-				DumpAllNVMEInfo(args[2]);
+				DumpNVMEAllInfo(args[2]);
 			}
 			else
 			{
-				DumpSATAAllInfo(args[2]);
+				getSATAAllDeviceInfo(args[2]);
 			}
 		}
 		else
@@ -282,19 +273,17 @@ int main(int argc, char *argv[])
 void listAllDeviceInfo()
 {
 	char device_num = 'a';
+	string satadev_str = "/dev/sd";
 
 	/* Start of "Scan ATA Device" loop : sda - sdz */
 	for (int i = 0; i < 26; i++)
 	{
-		string satadev_str = "/dev/sd";
 		satadev_str += device_num;
-
-		DumpSATAAllInfo(satadev_str);
-
+		getSATAAllDeviceInfo(satadev_str);
 		device_num = device_num + 1;
   	}
 
-	/*start of "Scan NVME device" loop : nvme0 - nvme10 */
+	/*start of "Scan NVME device" loop : nvme0 - nvme9 */
 	for (int x = 0; x < 10; x++)
 	{
 		for (int y = 0; y < 10; y++)
@@ -308,18 +297,20 @@ void listAllDeviceInfo()
 	}
 }
 
-void DumpSATAAllInfo(string deviceStr)
+void getSATAAllDeviceInfo(string deviceStr)
 {
-	int ok = 0;
-	ok += DumpSATAIDInfo(deviceStr);
-	if (ok == 0)
+	int getSATAresult = 0;
+	getSATAresult = getSATAIDInfo(deviceStr);
+	if (getSATAresult == 0)
 	{
-		ok += DumpSATASMARTInfo(deviceStr);
-		ok += DumpSATAHealthInfo(deviceStr);
+		getSATAresult = getSATASMARTInfo(deviceStr);
+		getSATAresult = getSATAHealthInfo(deviceStr);
 	}
+	else 
+		return;
 }
 
-void DumpAllNVMEInfo(string deviceStr)
+void DumpNVMEAllInfo(string deviceStr)
 {
 	int ok = 0;
 	ok += DumpNVMEIDInfo(deviceStr);
@@ -365,39 +356,41 @@ int DumpNVMEWAI(string deviceStr)
 	 
 }
 
-int DumpSATAIDInfo(string deviceStr)
+int getSATAIDInfo(string deviceStr)
 {
 	struct hd_driveid hd;
-	int fd;
-	memset(&hd, 0, 512);
+	memset(&hd, 0, BUFSIZE);
+	
+	int fd = -1;
 	fd = ::open(deviceStr.c_str(), O_RDONLY | O_NONBLOCK);
 	if (fd < 0)
-		return -1;
+		return -1;	
+
 	if (!ioctl(fd, HDIO_GET_IDENTITY, &hd))
 	{
 		std::string model(reinterpret_cast<char*> (hd.model));
 		std::string fw_ver(reinterpret_cast<char*> (hd.fw_rev));
 		std::string serial_no(reinterpret_cast<char*> (hd.serial_no));
-		 
-		string s1 = "---------- SATA SSD Disk Information ----------";
-		cout << s1 << endl;
 
-		string s2 = "Model\t\t\t:" + model.substr(0, 40);
-		cout << s2 << endl;
-		string s3 = "FW Version\t\t:" + fw_ver.substr(0, 8);
-		cout << s3 << endl;
-		string s4 = "Serial No\t\t:" + serial_no.substr(0, 20);
-		cout << s4 << endl;
-		string s5 = "Support Interface\t:SATA";
-		cout << s5 << endl;
-		
+		cout << "---------------- SATA SSD Disk Information ----------------" << endl;
+		cout << " SATA Device Path\t: " + deviceStr << endl;
+		string strModel = " Model\t\t\t: " + model.substr(0, 40);
+		cout << strModel << endl;
+		string strVer = " FW Version\t\t: " + fw_ver.substr(0, 8);
+		cout << strVer << endl;
+		string strSN = " Serial No\t\t: " + serial_no.substr(0, 20);
+		cout << strSN << endl;
+		string strInterface = " Support Interface\t: SATA";
+		cout << strInterface << endl;	
 	}
 	else
-	{::close(fd);
+	{
+		::close(fd);
 		return -1;
-	}::close(fd);
+	}
+	
+	::close(fd);
 	return 0;
-
 }
 
 int DumpNVMEIDInfo(string deviceStr)
@@ -414,7 +407,7 @@ int DumpNVMEIDInfo(string deviceStr)
 	const char *fwrev_str_byte;
 	nvmeDev->nvme_read_id_ctrl(id_ctrl);
 
-	string s1 = "---------- NVMe SSD Disk Information ----------";
+	string s1 = "---------------- NVMe SSD Disk Information ----------------";
 	cout << s1 << endl;
 
 	model_str_byte = format_char_array(buf, id_ctrl.mn);
@@ -436,7 +429,7 @@ int DumpNVMEIDInfo(string deviceStr)
 	return 0;
 }
 
-vector<string> get_SMART_Attributes(int fd)
+vector<string> get_SMART_Attributes()
 {
  	vector<string> attributesStringList;
 	
@@ -473,25 +466,24 @@ vector<string> get_SMART_Attributes(int fd)
 	return attributesStringList;
 }
 
-int DumpSATASMARTInfo(string deviceStr)
+int getSATASMARTInfo(string deviceStr)
 {
-	int fd;
-	int buf_size = 512;
+	int fd = -1 ;
 	fd = ::open(deviceStr.c_str(), O_RDONLY | O_NONBLOCK);
 	if (fd < 0)
 		return -1;
-	char id_arr[3];
-	unsigned char buf[buf_size] = { WIN_SMART, 0, SMART_READ_VALUES, 1
-	};
-	ioctl(fd, HDIO_DRIVE_CMD, (unsigned char *) buf);
 	
-	vector<string> attributesStringList = get_SMART_Attributes(fd);
-	string s1 = "---------------- SATA SSD S.M.A.R.T Information ----------------";
-	cout << s1 << endl;
- 
+	char id_arr[3];
+	unsigned char buf[BUFSIZE] = { WIN_SMART, 0, SMART_READ_VALUES, 1};
+	ioctl(fd, HDIO_DRIVE_CMD, (unsigned char *) buf);
+	vector<string> attributesStringList = get_SMART_Attributes();
+	
+	cout << "---------------- SATA SSD S.M.A.R.T Information ----------------" << endl;
+ 	cout << " SATA Device Path\t: " + deviceStr << endl;
+ 	
 	for (auto att_item: attributesStringList)
 	{
-		for (int i = 6; i < buf_size; i += 12)
+		for (int i = 6; i < BUFSIZE; i += 12)
 		{
 			string att_id = att_item.substr(0, 2);
 			sprintf(id_arr, "%02X", buf[i]);
@@ -499,9 +491,7 @@ int DumpSATASMARTInfo(string deviceStr)
 			if (att_id.compare(id_arr) == 0)
 			{
 				int value = 0;
-
-				value = (buf[i + 8] << 24) + (buf[i + 7] << 16) + (buf[i + 6] << 8) + (buf[i + 5]);
-				
+				value = (buf[i + 8] << 24) + (buf[i + 7] << 16) + (buf[i + 6] << 8) + (buf[i + 5]);				
 				cout << att_item << "\t" << value <<"\t"<< endl;
 			}
 		}
@@ -528,28 +518,29 @@ int DumpNVMESMARTInfo(string deviceStr)
 	return 0;
 }
 
-int DumpSATAHealthInfo(string deviceStr)
+int getSATAHealthInfo(string deviceStr)
 {
 	int fd = -1;
-	int buf_size = 512;
 	fd = ::open(deviceStr.c_str(), O_RDONLY | O_NONBLOCK);
 	if (fd < 0)
 		return -1;
 	char id_arr[3];
-	unsigned char buf[buf_size] = { WIN_SMART, 0, SMART_READ_VALUES, 1
-	};
+	unsigned char buf[BUFSIZE] = { WIN_SMART, 0, SMART_READ_VALUES, 1 };
 	ioctl(fd, HDIO_DRIVE_CMD, (unsigned char *) buf);
-	vector<string> attributesStringList = get_SMART_Attributes(fd);
-	string s1 = "---------------- SATA SSD Health Information ----------------";
-	cout << s1 << endl;
+	vector<string> attributesStringList = get_SMART_Attributes();
+
+	cout << "---------------- SATA SSD Health Information ----------------" << endl;
+	cout << " SATA Device Path\t: " + deviceStr << endl;
+	
 	string item_spec_erase_count = "A8";
 	string item_average_erase_count = "97";
 	string item_average_erase_count1 = "A7";
 	string item_remain_life = "A9";
 	int average_erase_count = -1;
 	double spec_erase_count = -1;
-	int remain_life = -1;
-	for (int i = 6; i < buf_size; i += 12)
+	float remain_life = -1;
+	
+	for (int i = 6; i < BUFSIZE; i += 12)
 	{
 		sprintf(id_arr, "%02X", buf[i]);
 		if (item_remain_life.compare(id_arr) == 0)
@@ -569,21 +560,21 @@ int DumpSATAHealthInfo(string deviceStr)
 	if(remain_life != -1)
 	{
 		float healthvalue = remain_life;
-		cout << "Health Percentage: " << setprecision(3) << healthvalue << "%" << endl;
+		cout << " Health Percentage\t: " << setprecision(3) << healthvalue << "%" << endl;
 	}
 	else{
 		if (spec_erase_count == -1)
 		{
-			cout << "Unknown" << endl;
+			cout << " Unknown " << endl;
 		}
 		else
 		{
-			cout << "Max Erase Count of Spec: " << (int) spec_erase_count << endl;
-			cout << "Average Erase Count of Spec: " << average_erase_count << endl;
+			cout << " Max Erase Count of Spec\t: " << (int) spec_erase_count << endl;
+			cout << " Average Erase Count of Spec\t: " << average_erase_count << endl;
 			float healthvalue = ((spec_erase_count - average_erase_count) / spec_erase_count) *100;
 			if(healthvalue<0)
-				healthvalue=0;
-			cout << "Health Percentage: " << setprecision(3) << healthvalue << "%" << endl;
+				healthvalue = 0;
+			cout << " Health Percentage\t: " << setprecision(3) << healthvalue << "%" << endl;
 		}
 	}
 	::close(fd);

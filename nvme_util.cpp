@@ -9,8 +9,6 @@
 # define O_NONBLOCK	  04000
 #endif
 
-
-
 nvme_Device::nvme_Device()
 {
 
@@ -195,52 +193,15 @@ bool nvme_Device::nvme_pass_through(const nvme_cmd_in & in)
     // pt.timeout_ms = 60 * 1000;
     
     int status = ioctl(m_fd, NVME_IOCTL_ADMIN_CMD, &pt);
-	if (status < 0)
+
+    if (status < 0)
         //return set_err(errno, "NVME_IOCTL_ADMIN_CMD: %s", strerror(errno));
         return false;
-
-    if (status > 0)
+    else if (status > 0)
         //return set_nvme_err(out, status);
         return false;
-
-    out.result = pt.result;
-    bool ok = true;
-
-
-    //  if (   dont_print_serial_number && ok
-    //      && in.opcode == nvme_admin_identify && in.cdw10 == 0x01) {
-    //        // Invalidate serial number
-    //        nvme_id_ctrl & id_ctrl = *reinterpret_cast<nvme_id_ctrl *>(in.buffer);
-    //        memset(id_ctrl.sn, 'X', sizeof(id_ctrl.sn));
-    //  }
-
-    //  if (nvme_debugmode) {
-    //    if (start_usec >= 0) {
-    //      int64_t duration_usec = smi()->get_timer_usec() - start_usec;
-    //      if (duration_usec >= 500)
-    //        pout("  [Duration: %.3fs]\n", duration_usec / 1000000.0);
-    //    }
-
-    //    if (!ok) {
-    //      pout(" [NVMe call failed: ");
-    //      if (out.status_valid)
-    //        pout("NVMe Status=0x%04x", out.status);
-    //      else
-    //        pout("%s", device->get_errmsg());
-    //    }
-    //    else {
-    //      pout(" [NVMe call succeeded: result=0x%08x", out.result);
-    //      if (nvme_debugmode > 1 && in.direction() == nvme_cmd_in::data_in) {
-    //        pout("\n");
-    //        debug_hex_dump(in.buffer, in.size);
-    //        pout(" ");
-    //      }
-    //    }
-    //    pout("]\n");
-    //  }
-
-
-    return ok;
+    else
+        return true;
 
 }
 bool nvme_Device::nvme_read_WAI( void * data, unsigned size)
@@ -250,7 +211,8 @@ bool nvme_Device::nvme_read_WAI( void * data, unsigned size)
     in.set_data_in(nvme_admin_get_log_page, data, size);
     in.nsid = 0x00;
     in.cdw10 = 0x3ff04c6;
-	return nvme_pass_through(in);
+	
+    return nvme_pass_through(in);
 }
 bool nvme_Device::nvme_read_badblock( void * data, unsigned size)
 {
@@ -260,8 +222,8 @@ bool nvme_Device::nvme_read_badblock( void * data, unsigned size)
     in.nsid = 0x00;
     in.cdw10 = 0x400;
     in.cdw12 = 0x5A;
-    return nvme_pass_through(in);
     
+    return nvme_pass_through(in); 
 }
 
 bool nvme_Device::nvme_read_identify(unsigned nsid,
@@ -292,17 +254,6 @@ bool nvme_Device::nvme_read_log_page(unsigned char lid, void * data, unsigned si
     in.nsid = m_nsid;
     in.cdw10 = lid | (((size / 4) - 1) << 16);
 
-
     return nvme_pass_through(in);
 
-
-
-    //  QString CTLName;
-    //  for(int i = 404; i<=412; i++)
-    //  {
-    //      unsigned char *uc = (unsigned char*)(&data)+i;
-    //      unsigned char uc_data = *uc;
-    //      if(uc_data != '\0')
-    //          CTLName.append(uc_data);
-    //  }
 }

@@ -2,13 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#
-
 
 #ifndef NVME_UTIL_H
 #define NVME_UTIL_H
-
-
 
 class nvme_Device
 {
@@ -246,13 +242,8 @@ public:
         { }
     };
 
-
-
     nvme_print_options nvmeopts;
     int myOpen();
-
-
-
 
     bool nvme_read_id_ctrl(nvme_id_ctrl & id_ctrl);
     bool nvme_read_identify(unsigned nsid,
