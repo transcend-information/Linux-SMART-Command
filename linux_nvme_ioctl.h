@@ -2,7 +2,7 @@
 #define _UAPI_LINUX_NVME_IOCTL_H
 
 #include <linux/types.h>
-
+/*
 struct nvme_user_io {
     __u8	opcode;
     __u8	flags;
@@ -16,7 +16,7 @@ struct nvme_user_io {
     __u32	reftag;
     __u16	apptag;
     __u16	appmask;
-};
+};*/
 
 struct nvme_passthru_cmd {
     __u8	opcode;

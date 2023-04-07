@@ -21,22 +21,19 @@ inline const char * format_char_array(char (& str)[STRSIZE], const char (& chr)[
   { return format_char_array(str, (int)STRSIZE, chr, (int)CHRSIZE); }
 
 void listAllDeviceInfo();
+
 void getSATAAllDeviceInfo(string deviceStr);
 int getSATAIDInfo(string deviceStr);
 int getSATASMARTInfo(string deviceStr);
 int getSATAHealthInfo(string deviceStr);
 
-void DumpNVMEAllInfo(string deviceStr);
-int DumpNVMEIDInfo(string deviceStr);
-int DumpNVMESMARTInfo(string deviceStr);
-int DumpNVMEHealthInfo(string deviceStr);
-int DumpNVMEBadblock(string deviceStr);
-int DumpNVMEWAI(string deviceStr);
-
-char *grabString(char* data, int start_pos, int length);
-char *grabHex(char* data, int start_pos, int length);
-double hexArrToDec(char *data, int start_pos, int length);
+void getNVMEAllDeviceInfo(string deviceStr);
+int getNVMEIDInfo(string deviceStr);
+int getNVMESMARTInfo(string deviceStr);
+int getNVMEHealthInfo(string deviceStr);
+int getNVMEBadblock(string deviceStr);
+int getNVMEWAI(string deviceStr);
 
 void showGuide();
 
-vector<string>  get_SMART_Data_NVMe(nvme_Device * nvmeDev,int fd );
+vector<string>  get_SMART_Data_NVMe(nvme_Device *nvmeDev, int fd);

@@ -76,6 +76,7 @@ const char *format_with_thousands_sep(char *str, int strsize, uint64_t val, cons
 
 	return str;
 }
+
 const char *format_capacity(char *str, int strsize, uint64_t val, const char *decimal_point /*= 0 */)
 {
 	if (!decimal_point)
@@ -90,7 +91,6 @@ const char *format_capacity(char *str, int strsize, uint64_t val, const char *de
 	}
 
 	const unsigned factor = 1000;	// 1024 for KiB,MiB,...
-	static
 	const char prefixes[] = " KMGTP";
 
 	// Find d with val in[d, d*factor)
@@ -176,6 +176,7 @@ static const char *le128_to_str(char(&str)[64], const unsigned char(&val)[16],
 
 int main(int argc, char *argv[])
 {
+	int getDeviceResult = -1;
 	std::vector<std::string > args;
 	for (int i = 0; i < argc; i++)
 	{
@@ -218,41 +219,50 @@ int main(int argc, char *argv[])
 		{
 			if (args[2].find("nvme") != std::string::npos)
 			{
-				DumpNVMESMARTInfo(args[2]);
+				getDeviceResult = getNVMESMARTInfo(args[2]);
 			}
 			else
 			{
-				getSATASMARTInfo(args[2]);
+				getDeviceResult = getSATASMARTInfo(args[2]);
 			}
+
+			if(getDeviceResult == -1)
+				cout << " Not found Device Path\t: " + args[2] << endl;
 		}
 		else if (args[1].compare("-id") == 0)
 		{
 			if (args[2].find("nvme") != std::string::npos)
 			{
-				DumpNVMEIDInfo(args[2]);
+				getDeviceResult = getNVMEIDInfo(args[2]);
 			}
 			else
 			{
-				getSATAIDInfo(args[2]);
+				getDeviceResult = getSATAIDInfo(args[2]);
 			}
+
+			if(getDeviceResult == -1)
+				cout << " Not found Device Path\t: " + args[2] << endl;
 		}
 		else if (args[1].compare("-health") == 0)
 		{
 
 			if (args[2].find("nvme") != std::string::npos)
 			{
-				DumpNVMEHealthInfo(args[2]);
+				getDeviceResult = getNVMEHealthInfo(args[2]);
 			}
 			else
 			{
-				getSATAHealthInfo(args[2]);
+				getDeviceResult = getSATAHealthInfo(args[2]);
 			}
+
+			if(getDeviceResult == -1)
+				cout << " Not found Device Path\t: " + args[2] << endl;
 		}
 		else if (args[1].compare("-all") == 0)
 		{
 			if (args[2].find("nvme") != std::string::npos)
 			{
-				DumpNVMEAllInfo(args[2]);
+				getNVMEAllDeviceInfo(args[2]);
 			}
 			else
 			{
@@ -283,16 +293,14 @@ void listAllDeviceInfo()
 		device_num = device_num + 1;
   	}
 
-	/*start of "Scan NVME device" loop : nvme0 - nvme9 */
+	/* start of "Scan NVME device" loop : nvme0n1 - nvme9n4 */
 	for (int x = 0; x < 10; x++)
 	{
-		for (int y = 0; y < 10; y++)
+		for (int y = 0; y < 5; y++)
 		{
-			string nvmedev_str = "/dev/nvme" + std::to_string(x) + "n" + std::to_string(y);
-
-			DumpNVMEIDInfo(nvmedev_str);
-			DumpNVMESMARTInfo(nvmedev_str);
-			DumpNVMEHealthInfo(nvmedev_str);	
+		    string nvmedev_str = "/dev/nvme";
+			nvmedev_str = nvmedev_str + std::to_string(x) + "n" + std::to_string(y);
+			getNVMEAllDeviceInfo(nvmedev_str);
 		}
 	}
 }
@@ -310,50 +318,49 @@ void getSATAAllDeviceInfo(string deviceStr)
 		return;
 }
 
-void DumpNVMEAllInfo(string deviceStr)
+void getNVMEAllDeviceInfo(string deviceStr)
 {
-	int ok = 0;
-	ok += DumpNVMEIDInfo(deviceStr);
-	ok += DumpNVMESMARTInfo(deviceStr);
-	ok += DumpNVMEHealthInfo(deviceStr);
+	int getNVMEresult = 0;
+	getNVMEresult = getNVMEIDInfo(deviceStr);
+	if(getNVMEresult == 0)
+	{
+	 	getNVMEresult = getNVMESMARTInfo(deviceStr);
+		getNVMEresult = getNVMEHealthInfo(deviceStr);
+	}
+	else
+		return;
 }
 
-int DumpNVMEBadblock(string deviceStr)
+int getNVMEBadblock(string deviceStr)
 {
 	nvme_Device * nvmeDev;
 	nvmeDev = new nvme_Device(deviceStr.c_str(), "", 0);
 	int fd = nvmeDev->myOpen();
 	if (fd < 0)
 		return -1;
-	char buf[64];
+
 	nvme_Device::nvme_badblock bad_ctrl;
 	nvmeDev->nvme_read_badblock(&bad_ctrl, sizeof(bad_ctrl));
 	int res = bad_ctrl.badblock[0];
-	string s1 = "bad block\t: " + std::to_string(res);
-	cout << s1 << endl;
+	cout << " bad block\t\t: " + std::to_string(res) << endl;
 	return 0;
 }
 
-int DumpNVMEWAI(string deviceStr)
+int getNVMEWAI(string deviceStr)
 {
-	nvme_Device * nvmeDev;
+	nvme_Device *nvmeDev;
 	nvmeDev = new nvme_Device(deviceStr.c_str(), "", 0);
 	int fd = nvmeDev->myOpen();
 	if (fd < 0)
 		return -1;
-	char buf[64];
+
 	nvme_Device::nvme_WAI_Info wai_info;
 	int res = nvmeDev->nvme_read_WAI(&wai_info, sizeof(wai_info));
 	float waitlc = wai_info.wai[1008];
 	float waislc = wai_info.wai[1016];
-	string s1 = "WAI TLC\t: "  ;
-	string s2 = "WAI SLC\t: " ;
-	cout <<s1;
-	cout <<setprecision(2)<< waitlc/100 << endl;
-	cout << s2  ;
- 	cout <<setprecision(2)<< waislc/100 << endl;
- 	return 0;
-	 
+	cout << " WAI TLC\t\t: " << setprecision(2) << waitlc/100 << endl;
+ 	cout << " WAI SLC\t\t: " << setprecision(2) << waislc/100 << endl;
+ 	return 0;	 
 }
 
 int getSATAIDInfo(string deviceStr)
@@ -393,11 +400,12 @@ int getSATAIDInfo(string deviceStr)
 	return 0;
 }
 
-int DumpNVMEIDInfo(string deviceStr)
+int getNVMEIDInfo(string deviceStr)
 {
 	nvme_Device * nvmeDev;
 	nvmeDev = new nvme_Device(deviceStr.c_str(), "", 0);
-	int fd = nvmeDev->myOpen();
+	int fd = -1; 
+	fd = nvmeDev->myOpen();
 	if (fd < 0)
 		return -1;
 	char buf[64];
@@ -407,23 +415,15 @@ int DumpNVMEIDInfo(string deviceStr)
 	const char *fwrev_str_byte;
 	nvmeDev->nvme_read_id_ctrl(id_ctrl);
 
-	string s1 = "---------------- NVMe SSD Disk Information ----------------";
-	cout << s1 << endl;
-
+	cout << "---------------- NVMe SSD Disk Information ----------------" << endl;
+    cout << " NVMe Device Path\t: " + deviceStr << endl;
 	model_str_byte = format_char_array(buf, id_ctrl.mn);
-	string s2 = "Model\t\t\t:" + std::string(model_str_byte);
-	cout << s2 << endl;
-
+	cout << " Model\t\t\t: " + std::string(model_str_byte) << endl;
 	fwrev_str_byte = format_char_array(buf, id_ctrl.fr);
-	string s3 = "FW Version\t\t:" + std::string(fwrev_str_byte);
-	cout << s3 << endl;
-
+	cout << " FW Version\t\t: " + std::string(fwrev_str_byte) << endl;
 	serialno_str_byte = format_char_array(buf, id_ctrl.sn);
-	string s4 = "Serial No\t\t:" + std::string(serialno_str_byte);
-	cout << s4 << endl;
-
-	string s5 = "Support Interface\t:NVME";
-	cout << s5 << endl;
+	cout << " Serial No\t\t: " + std::string(serialno_str_byte) << endl;
+	cout << " Support Interface\t: NVMe " << endl;
 
 	::close(fd);
 	return 0;
@@ -501,20 +501,24 @@ int getSATASMARTInfo(string deviceStr)
 	return 0;
 }
 
-int DumpNVMESMARTInfo(string deviceStr)
+int getNVMESMARTInfo(string deviceStr)
 {
 	nvme_Device * nvmeDev;
 	nvmeDev = new nvme_Device(deviceStr.c_str(), "", 0);
 	int fd = nvmeDev->myOpen();
 	if (fd < 0)
 		return -1;
+	
 	vector<string> SMARTItems = get_SMART_Data_NVMe(nvmeDev, fd);
-	string s1 = "---------------- NVMe SSD S.M.A.R.T Information ----------------";
-	cout << s1 << endl;
+
+	cout << "---------------- NVMe SSD S.M.A.R.T Information ----------------" << endl;
+	cout << " NVMe Device Path\t: " + deviceStr << endl;
 	for (int i = 0; i < SMARTItems.size(); i++)
 	{
 		cout << SMARTItems.at(i) << endl;
-	}::close(fd);
+	}
+	
+	::close(fd);
 	return 0;
 }
 
@@ -527,7 +531,6 @@ int getSATAHealthInfo(string deviceStr)
 	char id_arr[3];
 	unsigned char buf[BUFSIZE] = { WIN_SMART, 0, SMART_READ_VALUES, 1 };
 	ioctl(fd, HDIO_DRIVE_CMD, (unsigned char *) buf);
-	vector<string> attributesStringList = get_SMART_Attributes();
 
 	cout << "---------------- SATA SSD Health Information ----------------" << endl;
 	cout << " SATA Device Path\t: " + deviceStr << endl;
@@ -581,16 +584,17 @@ int getSATAHealthInfo(string deviceStr)
 	return 0;
 }
 
-int DumpNVMEHealthInfo(string deviceStr)
+int getNVMEHealthInfo(string deviceStr)
 {
-	nvme_Device * nvmeDev;
+	nvme_Device *nvmeDev;
 	nvmeDev = new nvme_Device(deviceStr.c_str(), "", 0);
 	int fd = nvmeDev->myOpen();
 	if (fd < 0)
 		return -1;
 	vector<string> SMARTItems = get_SMART_Data_NVMe(nvmeDev, fd);
-	string s1 = "------- NVMe SSD Health Information -------";
-	cout << s1 << endl;
+
+	cout << "---------------- NVMe SSD Health Information ----------------" << endl;
+	cout << " NVMe Device Path\t: " + deviceStr << endl;
 	string item = SMARTItems.at(4);
 	string HealthPercentage = item.substr(item.find(":") + 1, strlen(item.c_str()));
 
@@ -603,30 +607,21 @@ int DumpNVMEHealthInfo(string deviceStr)
 	{
 		value = 100 - value;
 	}
-	string s2 = "Health Percentage: " + std::to_string(value) + " %";
-	cout << s2 << endl;
 
-	DumpNVMEBadblock(deviceStr);
-	DumpNVMEWAI(deviceStr);
+	cout << " Health Percentage\t: " + std::to_string(value) + "%" << endl;
+
+	getNVMEBadblock(deviceStr);
+	getNVMEWAI(deviceStr);
 	return 0;
 }
 
 vector<string> get_SMART_Data_NVMe(nvme_Device *nvmeDev, int fd)
 {
-	const char *type = "";
-	unsigned nsid = 0;	// invalid namespace id -> use default
-
-	/*  nvme_Device * nvmeDev;
-	nvmeDev = new nvme_Device(devName, type, nsid);
-	int fd = nvmeDev->myOpen(); */
-
 	nvme_Device::nvme_smart_log smart_log;
-
 	nvmeDev->nvme_read_smart_log(smart_log);
 
-	char buf[64];
-	//pout("SMART/Health Information (NVMe Log 0x02, NSID 0x%x)\n", nsid);
 	vector<string> smart;
+	char buf[64];
 	char val[64];
 
 	sprintf(val, "0\tCritical Warning:\t0x%02x", smart_log.critical_warning);
@@ -662,32 +657,10 @@ vector<string> get_SMART_Data_NVMe(nvme_Device *nvmeDev, int fd)
 	sprintf(val, "192-195	Warning Composite Temperature Time:\t%d", smart_log.warning_temp_time);
 	smart.push_back(std::string(val));
 	sprintf(val, "196-199	Critical Composite Temperature Time:\t%d", smart_log.critical_comp_time);
-	smart.push_back(std::string(val));::close(fd);
+	smart.push_back(std::string(val));
 
+	::close(fd);
 	return smart;
-}
-
-
-char* grabString(char* data, int start_pos, int length){
-	char *str = (char*)malloc( (length + 1) * sizeof(char) );
-	strncpy(str, data + start_pos, length);
-	str[length] = '\0';
-	return str;
-}
-
-char* grabHex(char* data, int start_pos, int length){
-	char *str = (char*)malloc( (length) * sizeof(char) );
-	memcpy(str, data + start_pos, length);
-	return str;
-}
-
-double hexArrToDec(char *data, int start_pos, int length){
-	double tmp = 0;
-	for(int i = 0; i < length; i++){
-		double shift = (unsigned char)data[start_pos+i] << (4* (2 * ((length-i)-1))); //\A5\AA\B2\BE4byte(16\A6줸)\A1A\A8⭿\B6q(\A8C\A4@\ADӳ椸\A6\B32Byte)
-		tmp += shift;
-	}
-	return tmp;
 }
 
 void showGuide()
@@ -704,5 +677,4 @@ void showGuide()
 	cout << " " << "-health:" << "\tlist the health information of the device" << endl;
 	cout << " " << "-license:" << "\tdisplay the End User License Agreement and Statement" << endl;
 	cout << " " << "-v:" << "\t\tdisplay the application version" << endl;
-
 }
