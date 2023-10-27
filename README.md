@@ -1,4 +1,4 @@
-# SMARTQuery-Linux-Command
+# Linux-SMART-Command
 
 **ABSTRACT**
 
