@@ -1,6 +1,5 @@
 # # Monitor SSD health and SMART status in Linux
 
-**ABSTRACT**
 -------------------------
 Get S.M.A.R.T Information for the Transcend Embedded SATA/NVMe SSD product.
 
@@ -61,7 +60,7 @@ Get ID , SMART and Health information by following command for NVMe SSD.
   <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/nvmesmart.png" width=70% height=70%>
   
   <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/nvmehealth.png" width=70% height=70%>
-#
+
 Get ID , SMART and Health information by following command for SATA SSD.
   <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/sataid.png" width=70% height=70%>
   
