@@ -1,32 +1,35 @@
-# Linux-SMART-Command
+# # Monitor SSD health and SMART status in Linux
 
 **ABSTRACT**
-
-Get S.M.A.R.T Information for the SATA/NVMe SSD drive.
-
 -------------------------
+Get S.M.A.R.T Information for the Transcend Embedded SATA/NVMe SSD product.
 
 This sample code demonstrates how to get the disk information of the solid state drives (SSD) in Linux, \
 include **identify information** (model name, firmware version and serial number, etc.) , \
 **S.M.A.R.T information** (temperature, erase count and power-on hours, etc.) and **Health information**. 
 
-Supports SATA and NVMe SSD devices. 
+**Note : The project works for Transcend Embedded SSD products.**
 
 #
   **Build Guide**
-  
+  -------------------------
   - **compile the executable file**
-  
-    ```$g++ -Wformat=0 -std=c++11 -static main.cpp nvme_util.cpp -o SMARTQuery_Cmd```
+```
+    g++ -Wformat=0 -std=c++11 -static main.cpp nvme_util.cpp -o SMARTQuery_Cmd
+```
     
   - **use <chmod +x> for sure you have proper right to execute the executable file**
 
-    ```$chmod +x SMARTQuery_Cmd```\
-    ```$sudo ./SMARTQuery_Cmd```
+```
+    chmod +x SMARTQuery_Cmd
+```
+```
+    sudo ./SMARTQuery_Cmd
+```
     
 #
   **Usage**
-  
+  -------------------------
   - **SMARTQuery_Cmd**\
     show all information of devices
     
@@ -40,9 +43,28 @@ Supports SATA and NVMe SSD devices.
       - -license: display the End User License Agreement and Statement
       - -v: display the application version
 
+   For NVMe SSD :
+```
+ sudo ./SMARTQuery_Cmd [option] /dev/nvme0n1
+``` 
+   
+   For SATA SSD :
+```
+ sudo ./SMARTQuery_Cmd [option] /dev/sda
+``` 
+
 #
-  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-35-06.png" width=70% height=70%>
+Get ID , SMART and Health information by following command for NVMe SSD.
+
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/nvmeid.png" width=70% height=70%>
   
-  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-43.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/nvmesmart.png" width=70% height=70%>
   
-  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/Screenshot%20from%202022-01-28%2015-34-21.png" width=70% height=70%>
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/nvmehealth.png" width=70% height=70%>
+#
+Get ID , SMART and Health information by following command for SATA SSD.
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/sataid.png" width=70% height=70%>
+  
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/satasmart.png" width=70% height=70%>
+  
+  <img src="https://github.com/transcend-information/SMARTQuery-Linux-Command/blob/main/imgs/satahealth.png" width=70% height=70%>
