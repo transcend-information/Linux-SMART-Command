@@ -1,4 +1,4 @@
-# # Monitor SSD health and SMART status in Linux
+# Monitor SSD health and SMART status in Linux
 
 -------------------------
 Get S.M.A.R.T Information for the Transcend Embedded SATA/NVMe SSD product.
